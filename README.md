@@ -1,4 +1,4 @@
-# 🚀 TransitX – AI-Powered Intelligent Public Transportation Ecosystem
+# 🚀 Movana– AI-Powered Intelligent Public Transportation Ecosystem
 
 ## 📌 Project Overview
 

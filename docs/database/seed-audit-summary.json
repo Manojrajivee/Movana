@@ -1,0 +1,12 @@
+{
+  "database": "movana",
+  "seed_files_found": 2,
+  "reference_seed_files": 1,
+  "development_seed_files": 1,
+  "critical_findings": 0,
+  "high_findings": 0,
+  "medium_findings": 0,
+  "low_findings": 1,
+  "informational_findings": 3,
+  "final_status": "READY TO EXECUTE SEEDS"
+}

@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  movana-postgres:
+    image: postgres:16-alpine
+    container_name: movana_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: movana
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_ADMIN_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - movana_pgdata:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - movana-network
+
+  movana-redis:
+    image: redis:7-alpine
+    container_name: movana_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - movana_redisdata:/data
+    networks:
+      - movana-network
+
+networks:
+  movana-network:
+    driver: bridge
+
+volumes:
+  movana_pgdata:
+  movana_redisdata:

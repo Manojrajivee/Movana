@@ -1,0 +1,19 @@
+{
+  "database": "movana",
+  "postgresql_version": "PostgreSQL 16.13, compiled by Visual C++ build 1944, 64-bit",
+  "migration_count": 24,
+  "base_tables": 109,
+  "views": 8,
+  "functions_procedures": 278,
+  "triggers": 73,
+  "indexes": 342,
+  "foreign_keys": 181,
+  "partitioned_tables": 1,
+  "child_partitions": 16,
+  "critical_findings": 0,
+  "high_findings": 0,
+  "medium_findings": 2,
+  "low_findings": 2,
+  "informational_findings": 3,
+  "final_status": "READY FOR SEEDING"
+}

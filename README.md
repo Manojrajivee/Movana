@@ -1,238 +1,102 @@
-# 🚀 Movana-Move Smarter. Live Better – AI-Powered Intelligent Public Transportation Ecosystem
+# Movana — Next-Generation Transportation Platform
 
-## 📌 Project Overview
-
-**TransitX** is an AI-powered smart public transportation platform designed to modernize public transit by providing real-time bus tracking, intelligent route recommendations, predictive arrival times, multilingual support, passenger safety features, and data-driven insights for transport authorities.
-
-Unlike traditional bus tracking applications, TransitX combines **Artificial Intelligence, Real-Time GPS Tracking, Predictive Analytics, Accessibility Features, and Smart City Technologies** into a unified ecosystem for passengers, drivers, and government transport agencies.
-
-The platform aims to improve the overall public transportation experience by reducing waiting time, increasing safety, optimizing routes, and enabling data-driven decision-making for smarter cities.
+Movana is an enterprise-grade intercity and urban bus transit platform engineered for high concurrency, passenger safety, real-time fleet operations, transparent booking lifecycles, and resilient financial reconciliation.
 
 ---
 
-# 🎯 Problem Statement
+## 🏛️ System Architecture Overview
 
-Millions of passengers face challenges while using public transportation, including:
+Movana adopts a high-integrity relational persistence model paired with a high-throughput caching and real-time ingestion layer:
 
-* Unpredictable bus arrival times
-* Lack of live tracking for government and private buses
-* Difficulty finding the correct bus routes in unfamiliar cities
-* Language barriers for tourists and non-native speakers
-* Overcrowded buses without prior information
-* Missed stops during long-distance travel
-* Limited accessibility for elderly and visually impaired passengers
-* Lack of centralized communication between passengers, drivers, and transport authorities
-* Poor incident reporting and emergency response
-* Limited analytics for transport management
-
-These issues lead to wasted time, inconvenience, and reduced trust in public transportation systems.
+* **Authoritative Persistent Store (PostgreSQL 16)**:
+  * Manages immutable financial records (bookings, payments, refunds, invoices).
+  * Enforces database-level concurrency protection against seat double-booking.
+  * Preserves full operational audit logs, maintenance histories, and driver safety events.
+  * Tracks point-to-point geospatial routing, topological stops, schedules, and historical telemetry.
+* **Real-Time Telemetry & Ephemeral Cache (Redis)**:
+  * Ingests high-frequency vehicle GPS pings.
+  * Caches real-time vehicle coordinates, active driver states, and live trip status feeds.
+  * Batches historical GPS entries into PostgreSQL partitioned tables.
 
 ---
 
-# 💡 Proposed Solution
+## 📁 Repository Layout
 
-TransitX provides an intelligent transportation ecosystem that connects passengers, bus drivers, and transport authorities through a single AI-powered platform.
-
-The system offers:
-
-* Real-time GPS bus tracking
-* AI-based arrival time prediction
-* Smart route optimization
-* Live crowd estimation
-* Seat availability prediction
-* Driver route recommendations
-* Passenger stop reminders
-* Multilingual voice assistance
-* Digital ticketing and QR passes
-* Emergency safety features
-* Community reporting system
-* Government analytics dashboard
-* Predictive demand forecasting
-
-The platform continuously analyzes traffic conditions, weather, historical travel data, and live GPS information to provide accurate recommendations and improve transportation efficiency.
-
----
-
-# ✨ Key Features
-
-## 👤 Passenger Module
-
-* User Authentication
-* Google Login & OTP Login
-* Live Bus Tracking
-* AI Arrival Prediction
-* Route Recommendation
-* Smart Journey Planner
-* Digital QR Ticket
-* Personalized Notifications
-* Stop Reminder
-* Voice Navigation
-* Multi-Language Support
-* Offline Mode
-* Lost & Found
-* Emergency SOS
-* Women Safety Features
-* Accessibility Mode
-* Eco Travel Score
-* Community Alerts
-* Travel History
-* Favorite Routes
+```text
+Movana/
+├── backend/                  # Application API server (Node.js/TypeScript / Go)
+├── database/                 # Authoritative PostgreSQL engineering domain
+│   ├── migrations/           # Versioned sequential SQL migrations (V001__... to V024__...)
+│   ├── seeds/                # Deterministic reference and development seed datasets
+│   ├── tests/                # Automated SQL integrity, constraint & isolation test suites
+│   ├── docs/                 # Detailed engineering and schema documentation
+│   └── README.md             # Database operational handbook
+├── docs/                     # Global architecture and platform design documentation
+│   ├── database-architecture.md
+│   ├── database-schema.md
+│   ├── database-relationships.md
+│   ├── indexing-strategy.md
+│   ├── migration-plan.md
+│   ├── backup-restore.md
+│   └── data-retention.md
+├── scripts/                  # Management scripts
+│   ├── database/             # Migration execution & verification runners
+│   ├── backup/               # Point-in-time and logical backup automation
+│   └── restore/              # Safe database recovery scripts
+├── .env.example              # Template environment variables
+├── .gitignore                # Enterprise-grade git ignore configuration
+├── docker-compose.yml        # Development container orchestration
+└── README.md                 # Project root documentation
+```
 
 ---
 
-## 🚌 Driver Module
+## 🛡️ Critical Safety & Multi-Tenant Rules
 
-* Driver Login
-* Route Navigation
-* AI Route Recommendation
-* Upcoming Stop Reminder
-* Passenger Count Monitoring
-* Emergency Reporting
-* Fuel Efficiency Analysis
-* Driving Performance Dashboard
-* Trip History
-* Incident Reporting
+The local PostgreSQL instance hosts multiple independent databases. Under no circumstances should any script or command modify databases other than **`movana`**.
 
----
+The following target databases are strictly protected:
+* `chatbot_db`
+* `cyber_investigation`
+* `dayflow`
+* `localhero`
+* `localhero_db`
+* `maritime_m3_db`
+* `movana_db` (legacy/isolated)
+* `skillbridge_ai`
 
-## 🏛 Admin Module
-
-* Fleet Management
-* Live Bus Monitoring
-* Route Management
-* Driver Management
-* Passenger Analytics
-* Complaint Management
-* Revenue Dashboard
-* AI Demand Prediction
-* Maintenance Prediction
-* Emergency Monitoring
-* Transport Performance Reports
+**All Movana migrations, seeds, and test suites must strictly run inside the `movana` database.**
 
 ---
 
-# 🤖 Artificial Intelligence Features
+## ⚙️ Quick Start
 
-* ETA (Arrival Time) Prediction
-* Crowd Prediction
-* Seat Availability Prediction
-* Smart Route Optimization
-* Driver Recommendation
-* Traffic Delay Prediction
-* Weather Impact Analysis
-* Maintenance Prediction
-* Voice Assistant
-* Demand Forecasting
-* Explainable AI Predictions
+### 1. Prerequisites
+* **PostgreSQL 16.x** (64-bit) running on port `5432`
+* **pgAdmin 4** or **psql** command line client
+* Optional: **Docker & Docker Compose**
 
----
+### 2. Environment Configuration
+Copy `.env.example` to `.env`:
+```powershell
+Copy-Item .env.example .env
+```
+Ensure credentials point to `DB_NAME=movana`.
 
-# 🌍 Smart City Features
-
-* Smart Bus Stops
-* Real-Time Incident Reporting
-* Road Block Detection
-* Flood Alerts
-* Traffic Congestion Alerts
-* Digital Twin Ready Architecture
-* Carbon Emission Analytics
-* Sustainable Transportation Insights
+### 3. Verify Connection
+```powershell
+psql -U postgres -h localhost -p 5432 -d movana -c "SELECT current_database(), version();"
+```
 
 ---
 
-# 🛠 Technology Stack
+## 📚 Technical Documentation
 
-### Frontend
-
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
-* shadcn/ui
-* Framer Motion
-* Redux Toolkit
-* Socket.IO Client
-
-### Backend
-
-* NestJS
-* Node.js
-* TypeScript
-* JWT Authentication
-* REST API
-* WebSockets
-
-### AI & Machine Learning
-
-* Python
-* FastAPI
-* TensorFlow
-* Scikit-learn
-* OpenCV
-* Pandas
-
-### Database
-
-* PostgreSQL
-* Redis
-* Prisma ORM
-
-### Cloud & Services
-
-* Firebase Cloud Messaging
-* Google Maps API / Mapbox
-* Razorpay
-* AWS / Google Cloud
-* Docker
-
----
-
-# 🔐 Security Features
-
-* JWT Authentication
-* Role-Based Access Control (RBAC)
-* Secure Password Hashing
-* OTP Verification
-* Google Authentication
-* HTTPS Support
-* API Rate Limiting
-* Input Validation
-* Secure File Uploads
-
----
-
-# 🎯 Target Users
-
-* Daily Commuters
-* Students
-* Tourists
-* Government Transport Departments
-* Private Bus Operators
-* Bus Drivers
-* Smart City Administrators
-
----
-
-# 🚀 Future Enhancements
-
-* Metro & Train Integration
-* Electric Vehicle Fleet Management
-* AI Chatbot Travel Assistant
-* Smart Traffic Signal Integration
-* IoT-Based Vehicle Health Monitoring
-* AR Navigation to Bus Stops
-* Smartwatch Support
-* Voice-Only Navigation
-* Blockchain-Based Ticket Verification
-
----
-
-# 🌱 Expected Impact
-
-TransitX aims to make public transportation more efficient, reliable, accessible, and intelligent by reducing travel uncertainty, improving passenger safety, supporting sustainable mobility, and enabling transport authorities to make data-driven operational decisions.
-
----
-
-# 📄 License
-
-This project is developed for educational, research, and hackathon purposes. Future versions may evolve into a scalable smart-city transportation solution.
+Detailed specifications are available in `docs/`:
+1. [Database Architecture](docs/database-architecture.md)
+2. [Complete Schema & Table Inventory](docs/database-schema.md)
+3. [Entity Relationships & ER Diagrams](docs/database-relationships.md)
+4. [Indexing & Query Optimization Strategy](docs/indexing-strategy.md)
+5. [Migration Sequencing & Execution Plan](docs/migration-plan.md)
+6. [Backup & Disaster Recovery Runbook](docs/backup-restore.md)
+7. [Data Retention, Partitioning & Archival Policy](docs/data-retention.md)

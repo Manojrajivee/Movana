@@ -1,0 +1,152 @@
+import { Injectable, OnModuleDestroy, OnApplicationShutdown, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import Redis, { RedisOptions } from 'ioredis';
+import { REDIS_DEFAULT_TIMEOUT_MS, REDIS_MAX_RETRIES } from './redis.constants';
+
+export interface RedisHealthResult {
+  status: 'up' | 'down';
+  latencyMs: number;
+  required: boolean;
+  error?: string;
+}
+
+@Injectable()
+export class RedisService implements OnModuleDestroy, OnApplicationShutdown {
+  private readonly logger = new Logger(RedisService.name);
+  private client: Redis | null = null;
+  private readonly isRequired: boolean;
+
+  constructor(private readonly configService: ConfigService) {
+    this.isRequired = this.configService.get<boolean>('redis.requiredForReady', false);
+    this.initializeClient();
+  }
+
+  private initializeClient(): void {
+    const host = this.configService.get<string>('redis.host', 'localhost');
+    const port = this.configService.get<number>('redis.port', 6379);
+    const password = this.configService.get<string>('redis.password');
+    const tls = this.configService.get<boolean>('redis.tls', false);
+
+    const options: RedisOptions = {
+      host,
+      port,
+      password: password || undefined,
+      tls: tls ? {} : undefined,
+      connectTimeout: REDIS_DEFAULT_TIMEOUT_MS,
+      maxRetriesPerRequest: REDIS_MAX_RETRIES,
+      enableOfflineQueue: false,
+      lazyConnect: true,
+      retryStrategy: (times) => {
+        if (times > REDIS_MAX_RETRIES) {
+          return null; // Stop retrying to avoid connection spam
+        }
+        return Math.min(times * 500, 2000);
+      },
+    };
+
+    try {
+      this.client = new Redis(options);
+
+      this.client.on('error', (err) => {
+        // Redact connection details and passwords from logs
+        this.logger.warn(`Redis connection notification: ${err.message}`);
+      });
+    } catch (err: any) {
+      this.logger.warn(`Failed to initialize Redis client: ${err.message}`);
+    }
+  }
+
+  /**
+   * Bounded ping check for readiness.
+   * Does not throw; returns health status and latency.
+   */
+  async checkHealth(): Promise<RedisHealthResult> {
+    const startTime = Date.now();
+
+    if (!this.client) {
+      return {
+        status: 'down',
+        latencyMs: 0,
+        required: this.isRequired,
+        error: 'Redis client not initialized',
+      };
+    }
+
+    try {
+      if (this.client.status !== 'ready' && this.client.status !== 'connecting') {
+        await Promise.race([
+          this.client.connect(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Connection timeout')), REDIS_DEFAULT_TIMEOUT_MS),
+          ),
+        ]);
+      }
+
+      const pong = await Promise.race([
+        this.client.ping(),
+        new Promise<string>((_, reject) =>
+          setTimeout(() => reject(new Error('Ping timeout')), REDIS_DEFAULT_TIMEOUT_MS),
+        ),
+      ]);
+
+      const latencyMs = Date.now() - startTime;
+
+      if (pong === 'PONG') {
+        return {
+          status: 'up',
+          latencyMs,
+          required: this.isRequired,
+        };
+      }
+
+      return {
+        status: 'down',
+        latencyMs,
+        required: this.isRequired,
+        error: 'Unexpected ping response',
+      };
+    } catch (_err: any) {
+      const latencyMs = Date.now() - startTime;
+      return {
+        status: 'down',
+        latencyMs,
+        required: this.isRequired,
+        error: 'Redis unreachable or connection timed out',
+      };
+    }
+  }
+
+  /**
+   * Exposes whether Redis is mandatory for readiness.
+   */
+  isRedisRequiredForReady(): boolean {
+    return this.isRequired;
+  }
+
+  /**
+   * Gracefully disconnects Redis client.
+   */
+  async closeClient(): Promise<void> {
+    if (this.client) {
+      try {
+        if (this.client.status === 'ready') {
+          await this.client.quit();
+        } else {
+          this.client.disconnect();
+        }
+      } catch (_err) {
+        // Ignore disconnect errors during shutdown
+      } finally {
+        this.client = null;
+      }
+    }
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    await this.closeClient();
+  }
+
+  async onApplicationShutdown(): Promise<void> {
+    await this.closeClient();
+  }
+}

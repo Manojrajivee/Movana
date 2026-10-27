@@ -20,6 +20,21 @@ import { RoutesModule } from './routes/routes.module';
 import { RouteVariantsModule } from './route-variants/route-variants.module';
 import { StopsModule } from './stops/stops.module';
 import { SchedulesModule } from './schedules/schedules.module';
+import { TrackingModule } from './tracking/tracking.module';
+import { GpsIngestionModule } from './gps-ingestion/gps-ingestion.module';
+import { GeofencingModule } from './geofencing/geofencing.module';
+import { EtaModule } from './eta/eta.module';
+import { DelaysModule } from './delays/delays.module';
+import { TripsModule } from './trips/trips.module';
+import { TripProgressModule } from './trip-progress/trip-progress.module';
+import { StopArrivalsModule } from './stop-arrivals/stop-arrivals.module';
+import { StopRemindersModule } from './stop-reminders/stop-reminders.module';
+import { ServiceDisruptionsModule } from './service-disruptions/service-disruptions.module';
+import { JourneyPlannerModule } from './journey-planner/journey-planner.module';
+import { RouteOptimizationModule } from './route-optimization/route-optimization.module';
+import { MultiModalModule } from './multi-modal/multi-modal.module';
+import { FareEstimationModule } from './fare-estimation/fare-estimation.module';
+import { SavedJourneysModule } from './saved-journeys/saved-journeys.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { PermissionsGuard } from './auth/guards/permissions.guard';
@@ -48,6 +63,21 @@ import { PermissionsGuard } from './auth/guards/permissions.guard';
     RouteVariantsModule,
     StopsModule,
     SchedulesModule,
+    TrackingModule,
+    GpsIngestionModule,
+    GeofencingModule,
+    EtaModule,
+    DelaysModule,
+    TripsModule,
+    TripProgressModule,
+    StopArrivalsModule,
+    StopRemindersModule,
+    ServiceDisruptionsModule,
+    JourneyPlannerModule,
+    RouteOptimizationModule,
+    MultiModalModule,
+    FareEstimationModule,
+    SavedJourneysModule,
   ],
   providers: [
     {

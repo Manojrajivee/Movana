@@ -14,6 +14,13 @@ describe('RedisService (Unit Tests)', () => {
       quit: jest.fn().mockResolvedValue('OK'),
       disconnect: jest.fn(),
       on: jest.fn(),
+      get: jest.fn().mockResolvedValue('{"cached":true}'),
+      set: jest.fn().mockResolvedValue('OK'),
+      del: jest.fn().mockResolvedValue(1),
+      keys: jest.fn().mockResolvedValue(['test:1', 'test:2']),
+      sadd: jest.fn().mockResolvedValue(1),
+      srem: jest.fn().mockResolvedValue(1),
+      smembers: jest.fn().mockResolvedValue(['mem1', 'mem2']),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -65,5 +72,33 @@ describe('RedisService (Unit Tests)', () => {
     await service.closeClient();
     expect(mockRedisClient.quit).toHaveBeenCalledTimes(1);
     expect((service as any).client).toBeNull();
+  });
+
+  it('provides safe key-value cache operations', async () => {
+    expect(service.isAvailable()).toBe(true);
+    await service.set('foo', 'bar', 60);
+    expect(mockRedisClient.set).toHaveBeenCalledWith('foo', 'bar', 'EX', 60);
+
+    const val = await service.get('foo');
+    expect(val).toBe('{"cached":true}');
+
+    await service.del('foo');
+    expect(mockRedisClient.del).toHaveBeenCalledWith('foo');
+
+    await service.delByPattern('test:*');
+    expect(mockRedisClient.keys).toHaveBeenCalledWith('test:*');
+    expect(mockRedisClient.del).toHaveBeenCalledWith('test:1', 'test:2');
+
+    await service.sadd('set-key', 'item-1');
+    expect(mockRedisClient.sadd).toHaveBeenCalledWith('set-key', 'item-1');
+
+    await service.srem('set-key', 'item-1');
+    expect(mockRedisClient.srem).toHaveBeenCalledWith('set-key', 'item-1');
+
+    const members = await service.smembers('set-key');
+    expect(members).toEqual(['mem1', 'mem2']);
+
+    const matchedKeys = await service.keys('test:*');
+    expect(matchedKeys).toEqual(['test:1', 'test:2']);
   });
 });

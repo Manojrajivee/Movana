@@ -72,11 +72,11 @@
 
 | # | Module Name | Status | Tables / State Used | Routes / Contracts | Dependencies |
 | :---: | :--- | :---: | :--- | :--- | :--- |
-| **21** | **Tracking** | `PLANNED` | Redis spatial cache, active trip tracking | Live vehicle tracking query endpoint | Modules 10, 16 |
-| **22** | **GPS Ingestion** | `PLANNED` | `vehicle_location_history` (partitioned) | High-throughput telemetry ingestion API | Modules 16, 21 |
-| **23** | **Geofencing** | `PLANNED` | `geofences`, `geofence_events` | Stop entry, exit, dwell event processing | Modules 19, 22 |
-| **24** | **ETA Engine** | `PLANNED` | Telemetry + schedule progress | Dynamic passenger arrival calculations | Modules 20, 22 |
-| **25** | **Delay Detection** | `PLANNED` | `trip_events`, schedule comparisons | Variance alert triggers, delay thresholds | Modules 20, 24 |
+| **21** | **Tracking** | `TESTED` | `vw_active_vehicle_locations`, `vw_trip_current_status`, `vehicles`, Redis spatial cache | `GET /api/v1/tracking/vehicles`, `GET /api/v1/tracking/nearby`, `GET /api/v1/tracking/vehicles/:id`, `GET /api/v1/tracking/trips/:id` | Modules 10, 16 |
+| **22** | **GPS Ingestion** | `TESTED` | `vehicle_location_history`, `vehicles`, `trips`, `tracking_events` | `POST /api/v1/gps/ingest`, `POST /api/v1/gps/ingest/batch`, `POST /api/v1/gps/events`, `GET /api/v1/gps/history/:vehicleId` | Modules 16, 21 |
+| **23** | **Geofencing** | `TESTED` | `geofences`, `geofence_events`, `vehicles` | `POST /api/v1/geofences`, `GET /api/v1/geofences`, `GET /api/v1/geofences/:id`, `PATCH /api/v1/geofences/:id`, `DELETE /api/v1/geofences/:id`, `POST /api/v1/geofences/evaluate`, `POST /api/v1/geofences/events`, `GET /api/v1/geofences/events` | Modules 19, 22 |
+| **24** | **ETA Engine** | `TESTED` | `trips`, `trip_stops`, `stops`, `vehicles`, `routes` | `GET /api/v1/eta/trips/:tripId`, `GET /api/v1/eta/stops/:stopId` | Modules 20, 22 |
+| **25** | **Delay Detection** | `TESTED` | `trips`, `trip_events`, `trip_status_history`, `routes`, `vehicles` | `POST /api/v1/delays/detect/:tripId`, `GET /api/v1/delays/active`, `GET /api/v1/delays/summary`, `POST /api/v1/delays/resolve/:tripId` | Modules 20, 24 |
 
 ---
 
@@ -84,11 +84,11 @@
 
 | # | Module Name | Status | Tables / State Used | Routes / Contracts | Dependencies |
 | :---: | :--- | :---: | :--- | :--- | :--- |
-| **26** | **Trips** | `PLANNED` | `trips`, `trip_stops` | Scheduled and ad-hoc trip dispatch | Modules 9, 10, 20 |
-| **27** | **Trip Progress** | `PLANNED` | `trip_events`, `vw_trip_current_status` | Real-time journey progress milestones | Modules 22, 26 |
-| **28** | **Stop Arrivals** | `PLANNED` | `trip_stops.actual_arrival_at` | Stop sequence completion recording | Modules 23, 27 |
-| **29** | **Stop Reminders** | `PLANNED` | Redis user notification alarms | Approaching-stop passenger alert service | Modules 24, 28 |
-| **30** | **Service Disruptions** | `PLANNED` | `service_disruptions` | Network advisories, road closures, alerts | Modules 17, 26 |
+| **26** | **Trips** | `TESTED` | `trips`, `trip_stops`, `trip_status_history`, `trip_events`, `trip_schedules`, `schedule_stops`, `routes` | `POST /api/v1/trips/dispatch-schedule`, `POST /api/v1/trips/ad-hoc`, `GET /api/v1/trips`, `GET /api/v1/trips/:id`, `GET /api/v1/trips/:id/stops`, `PATCH /api/v1/trips/:id`, `POST /api/v1/trips/:id/cancel` | Modules 9, 10, 20 |
+| **27** | **Trip Progress** | `TESTED` | `trip_events`, `vw_trip_current_status`, `trips`, `trip_stops`, `vehicles` | `GET /api/v1/trip-progress/active/live-board`, `GET /api/v1/trip-progress/:tripId`, `POST /api/v1/trip-progress/:tripId/milestones`, `GET /api/v1/trip-progress/:tripId/milestones` | Modules 22, 26 |
+| **28** | **Stop Arrivals** | `TESTED` | `trip_stops`, `trips`, `trip_events`, `trip_status_history`, `stops` | `POST /api/v1/stop-arrivals/trips/:tripId/stops/:stopId/arrive`, `POST /api/v1/stop-arrivals/trips/:tripId/stops/:stopId/depart`, `POST /api/v1/stop-arrivals/trips/:tripId/stops/:stopId/skip`, `GET /api/v1/stop-arrivals/trips/:tripId/timeline`, `GET /api/v1/stop-arrivals/stops/:stopId/recent` | Modules 23, 27 |
+| **29** | **Stop Reminders** | `TESTED` | Redis ephemeral store & sets, `trips`, `trip_stops`, `stops` | `POST /api/v1/stop-reminders`, `GET /api/v1/stop-reminders/me`, `GET /api/v1/stop-reminders/:id`, `DELETE /api/v1/stop-reminders/:id`, `POST /api/v1/stop-reminders/evaluate/:tripId` | Modules 24, 28 |
+| **30** | **Service Disruptions** | `TESTED` | Redis active advisory store & sets, `routes`, `trips`, `stops` (Relational table `service_disruptions` absent from migrations V001–V025; sub-capability persistent table marked `BLOCKED` with zero DDL preserved) | `POST /api/v1/service-disruptions`, `GET /api/v1/service-disruptions`, `GET /api/v1/service-disruptions/active`, `GET /api/v1/service-disruptions/:id`, `PATCH /api/v1/service-disruptions/:id`, `POST /api/v1/service-disruptions/:id/resolve`, `DELETE /api/v1/service-disruptions/:id` | Modules 17, 26 |
 
 ---
 
@@ -96,11 +96,11 @@
 
 | # | Module Name | Status | Tables / State Used | Routes / Contracts | Dependencies |
 | :---: | :--- | :---: | :--- | :--- | :--- |
-| **31** | **Journey Planner** | `PLANNED` | Route graph, schedule topology | Point-to-point journey routing engine | Modules 17, 19, 20 |
-| **32** | **Route Optimization** | `PLANNED` | Historical speed breadcrumbs | Minimum-travel-time routing paths | Modules 22, 31 |
-| **33** | **Multi-Modal Transport** | `PLANNED` | Inter-agency transit connections | Feeder route and metro transfer lookup | Module 31 |
-| **34** | **Fare Estimation** | `PLANNED` | `fare_tables`, `fare_rules` | Fare matrix calculation before checkout | Modules 17, 31 |
-| **35** | **Saved Journeys** | `PLANNED` | `saved_locations`, `saved_routes` | Passenger favorite commutes & history | Modules 5, 31 |
+| **31** | **Journey Planner** | `TESTED` | `routes`, `stops`, `route_stops`, `route_versions`, `trips`, `trip_stops`, `trip_schedules` | `POST /api/v1/journey-planner/plan`, `GET /api/v1/journey-planner/direct`, `GET /api/v1/journey-planner/transfers` | Modules 17, 19, 20 |
+| **32** | **Route Optimization** | `TESTED` | `routes`, `stops`, `route_stops`, `trips`, `trip_stops`, `trip_events` | `GET /api/v1/route-optimization/routes/:routeId/analytics`, `GET /api/v1/route-optimization/routes/:routeId/recommendations`, `GET /api/v1/route-optimization/network/congestion-hotspots` | Modules 22, 31 |
+| **33** | **Multi-Modal Transport** | `TESTED` | `routes`, `stops`, `route_stops`, `vehicles`, `vehicle_types` | `GET /api/v1/multi-modal/modes`, `GET /api/v1/multi-modal/hubs`, `POST /api/v1/multi-modal/plan`, `GET /api/v1/multi-modal/hubs/:stopId/connections` | Module 31 |
+| **34** | **Fare Estimation** | `TESTED` | `fare_products`, `fare_rules`, `fare_prices`, `trip_fares`, `discounts`, `coupons`, `coupon_redemptions`, `routes`, `stops` | `POST /api/v1/fare-estimation/calculate`, `GET /api/v1/fare-estimation/routes/:routeId`, `GET /api/v1/fare-estimation/trips/:tripId/quotes`, `POST /api/v1/fare-estimation/coupons/validate` | Modules 17, 31 |
+| **35** | **Saved Journeys** | `TESTED` | `user_addresses`, Redis user set index, `routes`, `stops`, `trips` (Relational table `saved_routes` absent from migrations V001–V025; sub-capability persistent table marked `BLOCKED` with zero DDL preserved) | `POST /api/v1/saved-journeys/locations`, `GET /api/v1/saved-journeys/locations`, `DELETE /api/v1/saved-journeys/locations/:id`, `POST /api/v1/saved-journeys/routes`, `GET /api/v1/saved-journeys/routes`, `DELETE /api/v1/saved-journeys/routes/:id`, `GET /api/v1/saved-journeys/routes/:id/next-trip` | Modules 5, 31 |
 
 ---
 

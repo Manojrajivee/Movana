@@ -117,6 +117,132 @@ export class RedisService implements OnModuleDestroy, OnApplicationShutdown {
   }
 
   /**
+   * Exposes whether Redis client is ready.
+   */
+  isAvailable(): boolean {
+    return this.client !== null && this.client.status === 'ready';
+  }
+
+  /**
+   * Safe key-value get.
+   */
+  async get(key: string): Promise<string | null> {
+    if (!this.client || this.client.status !== 'ready') {
+      return null;
+    }
+    try {
+      return await this.client.get(key);
+    } catch (_err) {
+      return null;
+    }
+  }
+
+  /**
+   * Safe key-value set with optional TTL in seconds.
+   */
+  async set(key: string, value: string, ttlSeconds?: number): Promise<void> {
+    if (!this.client || this.client.status !== 'ready') {
+      return;
+    }
+    try {
+      if (ttlSeconds && ttlSeconds > 0) {
+        await this.client.set(key, value, 'EX', ttlSeconds);
+      } else {
+        await this.client.set(key, value);
+      }
+    } catch (_err) {
+      // Non-fatal cache write failure
+    }
+  }
+
+  /**
+   * Safe key deletion.
+   */
+  async del(key: string): Promise<void> {
+    if (!this.client || this.client.status !== 'ready') {
+      return;
+    }
+    try {
+      await this.client.del(key);
+    } catch (_err) {
+      // Non-fatal cache delete failure
+    }
+  }
+
+  /**
+   * Safe deletion by pattern.
+   */
+  async delByPattern(pattern: string): Promise<void> {
+    if (!this.client || this.client.status !== 'ready') {
+      return;
+    }
+    try {
+      const keys = await this.client.keys(pattern);
+      if (keys.length > 0) {
+        await this.client.del(...keys);
+      }
+    } catch (_err) {
+      // Non-fatal cache pattern delete failure
+    }
+  }
+
+  /**
+   * Safe set addition.
+   */
+  async sadd(key: string, ...members: string[]): Promise<void> {
+    if (!this.client || this.client.status !== 'ready' || members.length === 0) {
+      return;
+    }
+    try {
+      await this.client.sadd(key, ...members);
+    } catch (_err) {
+      // Non-fatal set add failure
+    }
+  }
+
+  /**
+   * Safe set removal.
+   */
+  async srem(key: string, ...members: string[]): Promise<void> {
+    if (!this.client || this.client.status !== 'ready' || members.length === 0) {
+      return;
+    }
+    try {
+      await this.client.srem(key, ...members);
+    } catch (_err) {
+      // Non-fatal set rem failure
+    }
+  }
+
+  /**
+   * Safe set members retrieval.
+   */
+  async smembers(key: string): Promise<string[]> {
+    if (!this.client || this.client.status !== 'ready') {
+      return [];
+    }
+    try {
+      return await this.client.smembers(key);
+    } catch (_err) {
+      return [];
+    }
+  }
+
+  /**
+   * Safe key pattern search.
+   */
+  async keys(pattern: string): Promise<string[]> {
+    if (!this.client || this.client.status !== 'ready') {
+      return [];
+    }
+    try {
+      return await this.client.keys(pattern);
+    } catch (_err) {
+      return [];
+    }
+  }
+
+  /**
    * Exposes whether Redis is mandatory for readiness.
    */
   isRedisRequiredForReady(): boolean {

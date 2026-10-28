@@ -42,6 +42,7 @@ import { RealTimeModule } from './real-time/real-time.module';
 import { CommunicationTemplatesModule } from './communication-templates/communication-templates.module';
 import { SosModule } from './sos/sos.module';
 import { LocationSharingModule } from './location-sharing/location-sharing.module';
+import { IncidentsModule } from './incidents/incidents.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { PermissionsGuard } from './auth/guards/permissions.guard';
@@ -92,6 +93,7 @@ import { PermissionsGuard } from './auth/guards/permissions.guard';
     CommunicationTemplatesModule,
     SosModule,
     LocationSharingModule,
+    IncidentsModule,
   ],
   providers: [
     {

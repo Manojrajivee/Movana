@@ -104,15 +104,15 @@
 
 ---
 
-## Batch 8: Notifications & Real-Time Gateway (Modules 36–40)
+## Batch 8: Notifications & Communication (Modules 36–40)
 
 | # | Module Name | Status | Tables / State Used | Routes / Contracts | Dependencies |
 | :---: | :--- | :---: | :--- | :--- | :--- |
-| **36** | **Notifications** | `PLANNED` | `notifications`, `notification_deliveries` | Multi-channel dispatch (SMS, Email, Push) | Module 5 |
-| **37** | **Notification Preferences** | `PLANNED` | `user_notification_preferences` | User opt-in/opt-out configuration | Module 36 |
-| **38** | **Alert Rules** | `PLANNED` | `alert_rules` | Automated event-to-notification triggers | Modules 30, 36 |
-| **39** | **Real-Time Gateway** | `PLANNED` | WebSocket server + Redis pub/sub | Live bus position map stream to clients | Modules 21, 22 |
-| **40** | **Communication Templates** | `PLANNED` | `notification_templates` | Localized email, SMS, and push templates | Module 36 |
+| **36** | **Notifications** | `TESTED` | `notifications`, `notification_deliveries`, `user_preferences` | `POST /api/v1/notifications`, `GET /api/v1/notifications`, `GET /api/v1/notifications/:id`, `POST /api/v1/notifications/:id/retry` | Modules 5, 37, 40 |
+| **37** | **Notification Preferences** | `TESTED` | `notification_preferences`, `user_preferences`, Redis quiet hours store (`movana:user_quiet_hours:{userId}`) | `GET /api/v1/notification-preferences/me`, `PUT /api/v1/notification-preferences/me`, `GET /api/v1/notification-preferences/channels`, `PUT /api/v1/notification-preferences/channels`, `GET /api/v1/notification-preferences/quiet-hours`, `PUT /api/v1/notification-preferences/quiet-hours` | Modules 5, 36 |
+| **38** | **Alert Rules** | `TESTED` | Redis alert rules store & secondary index (`movana:alert_rules:*`), referential integrity against `users`, `routes`, `stops`, `geofences` (Relational table `alert_rules` absent from migrations V001–V025; sub-capability relational table marked `BLOCKED` with zero DDL preserved) | `POST /api/v1/alert-rules`, `GET /api/v1/alert-rules`, `GET /api/v1/alert-rules/:id`, `PATCH /api/v1/alert-rules/:id`, `DELETE /api/v1/alert-rules/:id`, `POST /api/v1/alert-rules/evaluate` | Modules 23, 25, 30, 36 |
+| **39** | **Real-Time Gateway** | `TESTED` | WebSocket Gateway (`@nestjs/websockets` / Socket.IO), Redis Pub/Sub (`RedisService.publish`), JWT Handshake Auth | `POST /api/v1/real-time/publish`, `GET /api/v1/real-time/status`, `GET /api/v1/real-time/channels`, WebSocket namespaces `/` & events `subscribe`, `unsubscribe`, `location_update`, `trip_alert`, `disruption_notice` | Modules 21, 22, 36 |
+| **40** | **Communication Templates** | `TESTED` | `notification_templates` | `POST /api/v1/communication-templates`, `GET /api/v1/communication-templates`, `GET /api/v1/communication-templates/:id`, `PATCH /api/v1/communication-templates/:id`, `DELETE /api/v1/communication-templates/:id`, `POST /api/v1/communication-templates/render`, `POST /api/v1/communication-templates/:id/preview` | Module 36 |
 
 ---
 

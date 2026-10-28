@@ -35,6 +35,11 @@ import { RouteOptimizationModule } from './route-optimization/route-optimization
 import { MultiModalModule } from './multi-modal/multi-modal.module';
 import { FareEstimationModule } from './fare-estimation/fare-estimation.module';
 import { SavedJourneysModule } from './saved-journeys/saved-journeys.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { NotificationPreferencesModule } from './notification-preferences/notification-preferences.module';
+import { AlertRulesModule } from './alert-rules/alert-rules.module';
+import { RealTimeModule } from './real-time/real-time.module';
+import { CommunicationTemplatesModule } from './communication-templates/communication-templates.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { PermissionsGuard } from './auth/guards/permissions.guard';
@@ -78,6 +83,11 @@ import { PermissionsGuard } from './auth/guards/permissions.guard';
     MultiModalModule,
     FareEstimationModule,
     SavedJourneysModule,
+    NotificationsModule,
+    NotificationPreferencesModule,
+    AlertRulesModule,
+    RealTimeModule,
+    CommunicationTemplatesModule,
   ],
   providers: [
     {

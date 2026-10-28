@@ -243,6 +243,20 @@ export class RedisService implements OnModuleDestroy, OnApplicationShutdown {
   }
 
   /**
+   * Safe Redis pub/sub message publish.
+   */
+  async publish(channel: string, message: string): Promise<number> {
+    if (!this.client || this.client.status !== 'ready') {
+      return 0;
+    }
+    try {
+      return await this.client.publish(channel, message);
+    } catch (_err) {
+      return 0;
+    }
+  }
+
+  /**
    * Exposes whether Redis is mandatory for readiness.
    */
   isRedisRequiredForReady(): boolean {

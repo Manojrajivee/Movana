@@ -44,6 +44,7 @@ import { SosModule } from './sos/sos.module';
 import { LocationSharingModule } from './location-sharing/location-sharing.module';
 import { IncidentsModule } from './incidents/incidents.module';
 import { SafetyZonesModule } from './safety-zones/safety-zones.module';
+import { IncidentManagementModule } from './incident-management/incident-management.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { PermissionsGuard } from './auth/guards/permissions.guard';
@@ -96,6 +97,7 @@ import { PermissionsGuard } from './auth/guards/permissions.guard';
     LocationSharingModule,
     IncidentsModule,
     SafetyZonesModule,
+    IncidentManagementModule,
   ],
   providers: [
     {
